@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.android.volley.Request;
@@ -54,11 +55,10 @@ public class ProductListAdapter extends ArrayAdapter<Item> {
         if (convertView == null) {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.product_list_row, parent, false);
 
-
-
             holder = new ViewHolder();
             holder.name = (TextView) convertView.findViewById(R.id.name_text_view_row);
             holder.price = (TextView) convertView.findViewById(R.id.price_text_view_row);
+            holder.icon = (ImageView) convertView.findViewById(R.id.icon_image_view_row);
 
             convertView.setTag(holder);
         } else {
@@ -66,15 +66,16 @@ public class ProductListAdapter extends ArrayAdapter<Item> {
         }
 
         //bind data to views.
-
-        holder.name.setText(items.get(position).getName());
-        holder.price.setText(String.valueOf(items.get(position).getPrice()));
+        holder.icon.setImageDrawable(getItem(position).getImage());
+        holder.name.setText(getItem(position).getName());
+        holder.price.setText(String.valueOf(getItem(position).getPrice()));
 
         return convertView;
     }
 
     private static class ViewHolder {
         TextView name, price;
+        ImageView icon;
     }
 
 

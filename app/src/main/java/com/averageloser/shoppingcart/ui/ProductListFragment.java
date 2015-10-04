@@ -1,13 +1,12 @@
 package com.averageloser.shoppingcart.ui;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -32,14 +31,13 @@ import java.util.List;
  * This class will display the list of products.
  */
 public class ProductListFragment extends ListFragment {
-    private ControllerCallback callback;
+    private ProductListControllerCallback callback;
+
     private ProductListAdapter listAdapter;
 
     private final static String URL = "http://192.168.1.12/Shop/index.php?id=all";
 
-    private List<Item> items = new ArrayList();
-
-    public interface ControllerCallback<T> {
+    public interface ProductListControllerCallback<T> {
         void onItemClicked(T item);
     }
 
@@ -53,10 +51,10 @@ public class ProductListFragment extends ListFragment {
         super.onAttach(context);
 
         try {
-            callback = (ControllerCallback) getActivity();
+            callback = (ProductListControllerCallback) getActivity();
 
         } catch (ClassCastException e) {
-            throw new IllegalStateException("Hosts must implement ControllerCallback");
+            throw new IllegalStateException("Hosts must implement ProductListControllerCallback");
         }
     }
 
@@ -73,11 +71,16 @@ public class ProductListFragment extends ListFragment {
 
         Log.i("activity created", "called");
 
-        listAdapter = new ProductListAdapter(getActivity(), R.layout.product_list_row, items);
+        listAdapter = new ProductListAdapter(getActivity(), R.layout.product_list_row, new ArrayList<Item>());
 
         setListAdapter(listAdapter);
 
         getData();
+    }
+
+    @Override
+    public void onListItemClick(ListView l, View v, int position, long id) {
+        callback.onItemClicked(this.getListAdapter().getItem(position));
     }
 
     //Uses volley to asynchronously download data from the rest source and fills the list of items.
@@ -117,6 +120,18 @@ public class ProductListFragment extends ListFragment {
     }
 
     private List<Item> createListFromData(String data) throws JSONException {
+        /*I don't feel like modifying the database to add an image column, so I am doing this disgusting
+        hack to add images to each item.  I didn't plan to add images, but they make it look a bit nicer. */
+        Drawable image;
+
+        Drawable[] images = new Drawable[6];
+        images[0] = getContext().getResources().getDrawable(R.drawable.clock);
+        images[1] = getContext().getResources().getDrawable(R.drawable.shoes);
+        images[2] = getContext().getResources().getDrawable(R.drawable.nes);
+        images[3] = getContext().getResources().getDrawable(R.drawable.pants);
+        images[4] = getContext().getResources().getDrawable(R.drawable.note4);
+        images[5] = getContext().getResources().getDrawable(R.drawable.laptop);
+
         List<Item> items = new ArrayList();
 
         JSONArray mainArray = new JSONArray(data);
@@ -128,6 +143,7 @@ public class ProductListFragment extends ListFragment {
             JSONObject obj = mainArray.optJSONObject(i);
 
             Item item = new Item();
+            item.setImage(images[i]);
             item.setName(obj.optString("name"));
             item.setPrice(Double.parseDouble(obj.optString("price")));
 

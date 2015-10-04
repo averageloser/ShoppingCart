@@ -25,4 +25,8 @@ public class Cart<T> {
     public void removeItem(T item) {
         items.remove(item);
     }
+
+    public int getSize() {
+        return items.size();
+    }
 }

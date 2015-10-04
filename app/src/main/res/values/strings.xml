@@ -1,4 +1,4 @@
 <resources>
-    <string name="app_name">ShoppingCart</string>
+    <string name="app_name">Cart Example</string>
     <string name="action_settings">Settings</string>
 </resources>
