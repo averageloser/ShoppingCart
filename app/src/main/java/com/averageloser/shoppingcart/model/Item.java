@@ -71,7 +71,7 @@ public class Item implements Parcelable {
         dest.writeString(name);
         dest.writeString(description);
         dest.writeDouble(price);
-        dest.writeValue(image);
+        //dest.writeValue(image);
     }
 
     @SuppressWarnings("unused")
