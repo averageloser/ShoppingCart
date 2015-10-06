@@ -1,6 +1,8 @@
 package com.averageloser.shoppingcart;
 
 import android.os.Bundle;
+import android.os.Parcelable;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.ListFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -22,6 +24,7 @@ public class MainActivity extends AppCompatActivity implements ProductListFragme
 
     private Cart cart;
     private Button cartButton; //TextView in toolbar that displays number of items in cart.
+    private ProductListFragment productListFragment;
     private ProductDetailsFragment productDetailsFragment;
     private CartListFragment cartListFragment;
 
@@ -32,15 +35,36 @@ public class MainActivity extends AppCompatActivity implements ProductListFragme
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        //create the cart.  Items will be added to it later.
-        cart = new Cart(new ArrayList<Item>());
+        cart = new Cart();
 
-        ListFragment lf = new ProductListFragment();
+        //get the list of saved items, if any.
+        List<Item> items = (List<Item>) getLastCustomNonConfigurationInstance();
 
-        productDetailsFragment = new ProductDetailsFragment();
+        if (items != null) {
+            cart.setItems(items);
+        } else {
+            cart.setItems(new ArrayList<Item>());
+        }
 
-        cartListFragment = new CartListFragment();
-        cartListFragment.setCart(cart);
+        FragmentManager manager = getSupportFragmentManager();
+
+        if (manager.findFragmentByTag("pjf") != null) {
+            productListFragment = (ProductListFragment) manager.findFragmentByTag("plf");
+        } else {
+            productListFragment = new ProductListFragment();
+        }
+
+        if (manager.findFragmentByTag("pdf") != null) {
+            productDetailsFragment = (ProductDetailsFragment) manager.findFragmentByTag("pdf");
+        } else {
+            productDetailsFragment = new ProductDetailsFragment();
+        }
+
+        if (manager.findFragmentByTag("clf") != null) {
+            cartListFragment = (CartListFragment) manager.findFragmentByTag("clf");
+        } else {
+            cartListFragment = new CartListFragment();
+        }
 
         cartButton = (Button) findViewById(R.id.cart_button);
         cartButton.setOnClickListener(new View.OnClickListener() {
@@ -50,7 +74,11 @@ public class MainActivity extends AppCompatActivity implements ProductListFragme
             }
         });
 
-        getSupportFragmentManager().beginTransaction().add(R.id.main_content, lf).commit();
+        cartListFragment.setCart(cart);
+
+        if (savedInstanceState == null) {
+            manager.beginTransaction().add(R.id.main_content, productListFragment, "plf").commit();
+        }
     }
 
     //User has clicked the button to shot the contents of the shopping cart.
@@ -58,8 +86,8 @@ public class MainActivity extends AppCompatActivity implements ProductListFragme
         if (!cartListFragment.isVisible()) {
             getSupportFragmentManager()
                     .beginTransaction()
-                    .addToBackStack("cart")
-                    .replace(R.id.main_content, cartListFragment, "cart")
+                    .addToBackStack("clf")
+                    .replace(R.id.main_content, cartListFragment, "clf")
                     .commit();
         }
     }
@@ -76,8 +104,8 @@ public class MainActivity extends AppCompatActivity implements ProductListFragme
         //Swap out the listFragment for the detials fragment, saving the transaction to the back stack.
         getSupportFragmentManager()
                 .beginTransaction()
-                .addToBackStack("details")
-                .replace(R.id.main_content, productDetailsFragment)
+                .addToBackStack("pdf")
+                .replace(R.id.main_content, productDetailsFragment, "pdf")
                 .commit();
     }
 
@@ -90,11 +118,17 @@ public class MainActivity extends AppCompatActivity implements ProductListFragme
         cartButton.setText("Items: " + cart.getSize());
     }
 
-    private void displayItems() {
-        List<Item> items = cart.getAllItems();
+    //used to persist the list of items in the shopping cart across configuration changes.
+    @Override
+    public Object onRetainCustomNonConfigurationInstance() {
+        return cart.getAllItems();
+    }
 
-        for (Item item : items) {
-            Log.i("item", item.getName());
-        }
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        //update the cart button text.
+        cartButton.setText("Items: " + cart.getSize());
     }
 }
