@@ -10,6 +10,10 @@ import java.util.List;
 public class Cart<T> {
     private List<T> items;
 
+    public Cart() {
+        
+    }
+    
     public Cart(List<T> items) {
         this.items = items;
     }
@@ -28,5 +32,9 @@ public class Cart<T> {
 
     public int getSize() {
         return items.size();
+    }
+    
+    public void setItems(List<T> items) {
+        this.items = items;
     }
 }
